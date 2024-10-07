@@ -4,11 +4,10 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import SearchBar from "../../components/SearchBar";
 import Loading from "../../components/Loading";
-import Annotation from "../../components/Annotaions"
-import { Button, CircularProgress } from "@mui/material";
+import Annotation from "../../components/Annotaions";
+import { Button } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import annotate from "../../assets/images/task-square.svg";
-//import notesicon from "../../assets/images/note-2.svg";
 
 import axios from "axios";
 const ITEMS_PER_PAGE = 5;
@@ -22,42 +21,41 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
   const [result, setResults] = useState();
   const [loading, setLoading] = useState();
   const [selectedArticles, setSelectedArticles] = useState([]);
-  const [showPopup, setShowPopup] = useState(false);
-  const [hoveredRow, setHoveredRow] = useState(null);
-
   const [currentPage, setCurrentPage] = useState(1);
+  console.log(data);
+
   const [filters, setFilters] = useState(() => {
     // Get initial state from localStorage, if available
     const savedFilters = localStorage.getItem("filters");
     return savedFilters ? JSON.parse(savedFilters) : { articleType: [] };
   });
-  console.log(selectedArticles.length)
-  console.log(selectedArticles.length)
+  console.log(selectedArticles.length);
+  console.log(selectedArticles.length);
   // Save filters to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("filters", JSON.stringify(filters));
   }, [filters]);
 
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  //const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [showTextAvailability, setShowTextAvailability] = useState(true);
   const [showArticleType, setShowArticleType] = useState(true);
   const [showPublicationDate, setShowPublicationDate] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [annotateData, setAnnotateData] = useState();
-  const [openNotes, setOpenNotes] = useState(false);
-  const [annotateLoading, setAnnotateLoading] = useState(false);
+  //const [openNotes, setOpenNotes] = useState(false);
+  //const [annotateLoading, setAnnotateLoading] = useState(false);
   const handleAnnotate = () => {
     if (openAnnotate) {
       setOpenAnnotate(false);
     } else {
       setOpenAnnotate(true);
-      setOpenNotes(false);
+      //setOpenNotes(false);
     }
   };
   // console.log(filters)
 
   useEffect(() => {
-    if (annotateLoading) {
+    if (loading) {
       // Disable scrolling
       document.body.style.overflow = "hidden";
     } else {
@@ -69,13 +67,13 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     return () => {
       document.body.style.overflow = "auto";
     };
-  }, [annotateLoading]);
+  }, [loading]);
 
   const handleFilterChange = async (event) => {
     setLoading(true);
-    setSelectedArticles([])
-    setAnnotateData([])
-    setOpenAnnotate(false)
+    setSelectedArticles([]);
+    setAnnotateData([]);
+    setOpenAnnotate(false);
     const newCheckedState = event.target.checked;
     //setIsChecked(newCheckedState);
     localStorage.setItem("checkboxState", JSON.stringify(newCheckedState)); // Save state to localStorage
@@ -129,12 +127,9 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
         //.post(apiUrl,{query:term,filters:updatedFilters.articleType})
         .post(apiUrl, requestBody)
         .then((response) => {
-          // console.log(response);
-          //setIsChecked((prev) => !prev);
-          //localStorage.setItem("checkboxState", JSON.stringify(!isChecked));
           const data = response.data; // Assuming the API response contains the necessary data
           setResults(data);
-          setAnnotateData([])
+          setAnnotateData([]);
           // Navigate to SearchPage and pass data via state
           navigate("/search", { state: { data, searchTerm } });
           //navigate("/search",{state:{data, searchTerm:term}});
@@ -151,14 +146,10 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
     }
   };
 
-  const handleApplyFilters = () => {
-    applyFilters(filters);
-    setShowFilterPopup(false);
-  };
   useEffect(() => {
     setSelectedArticles([]);
     setAnnotateData([]);
-    setOpenAnnotate(false)
+    setOpenAnnotate(false);
   }, []);
   useEffect(() => {
     // Clear session storage for chatHistory when the location changes
@@ -191,22 +182,25 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
   const handleResetAll = () => {
     // Clear the filters from state
     setFilters({ articleType: [] });
-    setAnnotateData([])
-    setSelectedArticles([])
-    setOpenAnnotate(false)
+    setAnnotateData([]);
+    setSelectedArticles([]);
+    setOpenAnnotate(false);
     // Clear the filters from localStorage
     localStorage.removeItem("filters");
-    
+
     // Optionally, you can also trigger the API call without any filters
     handleButtonClick({ articleType: [] });
   };
   const handleNavigate = (pmid) => {
-    navigate(`/article/${pmid}`, { state: { data: data, searchTerm,annotateData: annotateData } });
+    navigate(`/article/${pmid}`, {
+      state: { data: data, searchTerm, annotateData: annotateData },
+    });
   };
   // Calculate the index range for articles to display
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
-  const paginatedArticles = data.articles && data.articles.slice(startIndex, endIndex) || [];
+  const paginatedArticles =
+    (data.articles && data.articles.slice(startIndex, endIndex)) || [];
   // console.log(paginatedArticles);
 
   // Handle page change
@@ -248,31 +242,32 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
   // console.log(selectedArticles)
   const handleAnnotateClick = async () => {
     if (selectedArticles.length > 0) {
-      setAnnotateData([])
-      setAnnotateLoading(true);
-      axios.post('http://13.127.207.184:80/annotate', {
-        pmid: selectedArticles
+      setAnnotateData([]);
+      setLoading(true);
 
-          , // Sending the selected PMIDs in the request body
-      })
+      axios
+        .post("http://13.127.207.184:80/annotate", {
+          pmid: selectedArticles, // Sending the selected PMIDs in the request body
+        })
         .then((response) => {
-          console.log(response)
+          console.log(response);
           //setIsChecked((prev) => !prev);
           //localStorage.setItem("checkboxState", JSON.stringify(!isChecked));
-          const data = response.data; 
+          const data = response.data;
           // console.log(response)
-          setAnnotateData(data)
-          console.log(data)
-          console.log(data.length)
-          setOpenAnnotate(true)
+          setAnnotateData(data);
+          console.log(data);
+          console.log(data.length);
+          setOpenAnnotate(true);
+          setLoading(false);
           // console.log(data)// Assuming the API response contains the necessary data
           // setResults(data);
           // Navigate to SearchPage and pass data via state
           // navigate("/search", { state: { data, searchTerm } });
           // clearTimeout(timeoutId);
           // setLoading(false);
-          setAnnotateLoading(false);
-          console.log("executed")
+          setLoading(false);
+          console.log("executed");
         })
         .catch((error) => {
           console.log(error);
@@ -281,11 +276,9 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
           // navigate("/search", { state: { data: [], searchTerm } });
           console.error("Error fetching data from the API", error);
         });
-        }
-        
-        
-        // Handle success response (e.g., show a success message or update the UI)
-      
+    }
+
+    // Handle success response (e.g., show a success message or update the UI)
   };
   const [expandedPmids, setExpandedPmids] = useState({}); // Track which PMIDs are expanded
   const [expandedTexts, setExpandedTexts] = useState({});
@@ -691,155 +684,199 @@ const SearchResults = ({ open, onClose, applyFilters }) => {
               </div>
             </div>
           </div>
-          {loading ? (
-           <Loading/>):("")}
-          
-            <div className="searchContent-right" ref={contentRightRef}>
-              {data.articles && data.articles.length > 0 ? (
-                <>
-                  <div className="SearchResult-Count-Filters">
-                    <div className="SearchResult-Option-Left"
-                      style={{
-                          cursor: selectedArticles.length > 0 ? 'pointer' : 'not-allowed',
-                          opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
+          {loading ? <Loading /> : ""}
+
+          <div className="searchContent-right" ref={contentRightRef}>
+            {data.articles && data.articles.length > 0 ? (
+              <>
+                <div className="SearchResult-Count-Filters">
+                  <div
+                    className="SearchResult-Option-Left"
+                    style={{
+                      cursor:
+                        selectedArticles.length > 0 ? "pointer" : "not-allowed",
+                      opacity: selectedArticles.length > 0 ? 1 : "", // Change opacity for a disabled effect
+                    }}
+                  >
+                    {loading ? (
+                      <Loading />
+                    ) : (
+                      <button
+                        className={`SearchResult-Annotate ${
+                          selectedArticles.length > 0 ? "active" : "disabled"
+                        }`}
+                        disabled={selectedArticles.length === 0}
+                        onClick={
+                          selectedArticles.length > 0
+                            ? handleAnnotateClick
+                            : null
+                        }
+                        style={{
+                          cursor:
+                            selectedArticles.length > 0
+                              ? "pointer"
+                              : "not-allowed",
+                          opacity: selectedArticles.length > 0 ? 1 : "",
                         }}
-                        >
-                        {annotateLoading ? (
-                            <CircularProgress className="Loading-Spinner"background={"white"} size={24}  style={{ border:"none", marginLeft: "10px" }} />
-                            
-                          ):(
-                            <button className={`SearchResult-Annotate ${selectedArticles.length > 0 ? "active" : "disabled"}`} disabled={selectedArticles.length === 0}
-                                onClick={selectedArticles.length > 0 ? handleAnnotateClick : null} style={{ cursor: selectedArticles.length > 0 ? 'pointer' : 'not-allowed',
-                                  opacity: selectedArticles.length > 0 ? 1 : "",  }}> Annotate </button>
-                          )}
-                    </div>
+                      >
+                        {" "}
+                        Annotate{" "}
+                      </button>
+                    )}
+                  </div>
 
-                    <div style={{display:"flex",flexDirection:"row",alignItems:"baseline"}}>
-                      <div className="SearchResult-count" style={{ marginRight:"15px" }}>
-                        <span style={{ color: "blue"}}>
-                          
-                          {data.articles.length}
-                        </span>{" "}
-                        results
-                      </div>
-                      <div style={{display:"flex",flexDirection:"row",alignItems:"baseline",gap:"5px"}}>
-                        <span style={{color:"black", fontSize:"14px"}}>Sort by:</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      alignItems: "baseline",
+                    }}
+                  >
+                    <div
+                      className="SearchResult-count"
+                      style={{ marginRight: "15px" }}
+                    >
+                      <span style={{ color: "blue" }}>
+                        {data.articles.length}
+                      </span>{" "}
+                      results
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "row",
+                        alignItems: "baseline",
+                        gap: "5px",
+                      }}
+                    >
+                      <span style={{ color: "black", fontSize: "14px" }}>
+                        Sort by:
+                      </span>
                       <select className="SearchResult-dropdown">
-                      <option value="audi">Publication Date</option>
-                      <option value="volvo">Best Match</option>
+                        <option value="audi">Publication Date</option>
+                        <option value="volvo">Best Match</option>
                       </select>
-                      </div>
-                     
                     </div>
-                  </div>
-
-                  <div className="searchContent-articles">
-                    <div className="searchresults-list">
-                      {paginatedArticles.map((result, index) => (
-                        <div key={index} className="searchresult-item ">
-                          <div className="searchresult-item-header">
-                            <h3 className="searchresult-title">
-                            <input
-                                    type="checkbox"
-                                    className="result-checkbox"
-                                    onChange={() => handleCheckboxChange(result.pmid)}
-                                    checked={selectedArticles.includes(result.pmid)} // Sync checkbox state
-                                  />
-                              <span
-                                className="gradient-text"
-                                onClick={() => handleNavigate(result.pmid)}
-                                style={{ cursor: "pointer" }}
-                              >
-                                {italicizeTerm(result.article_title)}
-                              </span>
-                            </h3>
-                           
-                          </div>
-                          <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
-                          <p className="searchresult-pmid">{`PMID: ${result.pmid}`}</p>
-                          <p
-                              className="searchresult-description"
-                              style={{ textAlign: "justify" }}
-                            >
-                              {italicizeTerm(
-                                Object.values(result.abstract_content[1]).join(" ").slice(0, 500)
-                              )}
-                              {Object.values(result.abstract_content[1]).join(" ").length > 500 ? "..." : ""}
-                            </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="pagination">
-                    <span>{`${startIndex + 1} - ${endIndex} of ${
-                      data.articles.length
-                    }`}</span>
-                    <div className="pagination-controls">
-                      <Button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                      >
-                        {"<<"}
-                      </Button>
-                      <span>{currentPage}</span>
-                      <span>/ {totalPages}</span>
-                      <Button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                      >
-                        {">>"}
-                      </Button>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="data-not-found-container">
-                  <div className="data-not-found">
-                    <h2>Data Not Found</h2>
-                    <p>
-                      We couldn't find any data matching your search. Please try
-                      again with different keywords.
-                    </p>
                   </div>
                 </div>
-              )}
-            </div>
-          
-          
-            <>
-            
-            <div className="search-right-aside">
-              {openAnnotate && (
-              <div className="search-annotate">
-                
-                <Annotation 
-                    openAnnotate={openAnnotate} 
-                    annotateData={annotateData}
-                />
-            
+
+                <div className="searchContent-articles">
+                  <div className="searchresults-list">
+                    {paginatedArticles.map((result, index) => (
+                      <div key={index} className="searchresult-item ">
+                        <div className="searchresult-item-header">
+                          <h3 className="searchresult-title">
+                            <input
+                              type="checkbox"
+                              className="result-checkbox"
+                              onChange={() => handleCheckboxChange(result.pmid)}
+                              checked={selectedArticles.includes(result.pmid)} // Sync checkbox state
+                            />
+                            <span
+                              className="gradient-text"
+                              onClick={() => handleNavigate(result.pmid)}
+                              style={{ cursor: "pointer" }}
+                            >
+                              {italicizeTerm(result.article_title)}
+                            </span>
+                          </h3>
+                        </div>
+                        <p className="searchresult-authors">{`Published on: ${result.publication_date}`}</p>
+                        <p className="searchresult-pmid">{`PMID: ${result.pmid}`}</p>
+                        <p
+                          className="searchresult-description"
+                          style={{ textAlign: "justify" }}
+                        >
+                          {italicizeTerm(
+                            Object.values(result.abstract_content[1])
+                              .join(" ")
+                              .slice(0, 500)
+                          )}
+                          {Object.values(result.abstract_content[1]).join(" ")
+                            .length > 500
+                            ? "..."
+                            : ""}
+                        </p>
+                        <div className="Article-options">
+                          <p className="similarity-score">{`Similarity Score: ${result.similarity_score.toFixed(
+                            2
+                          )}%`}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="pagination">
+                  <span>{`${startIndex + 1} - ${endIndex} of ${
+                    data.articles.length
+                  }`}</span>
+                  <div className="pagination-controls">
+                    <Button
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      {"<<"}
+                    </Button>
+                    <span>{currentPage}</span>
+                    <span>/ {totalPages}</span>
+                    <Button
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      {">>"}
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="data-not-found-container">
+                <div className="data-not-found">
+                  <h2>Data Not Found</h2>
+                  <p>
+                    We couldn't find any data matching your search. Please try
+                    again with different keywords.
+                  </p>
+                </div>
               </div>
             )}
+          </div>
 
+          <>
+            <div className="search-right-aside">
+              {openAnnotate && (
+                <div className="search-annotate">
+                  <Annotation
+                    openAnnotate={openAnnotate}
+                    annotateData={annotateData}
+                  />
+                </div>
+              )}
 
-                <div className="search-icons-group">
+              <div className="search-icons-group">
                 <div
-        className={`search-annotate-icon ${openAnnotate ? "open" : "closed"} ${annotateData && annotateData.length > 0 ? "" : "disabled"}`}
-        onClick={annotateData && annotateData.length > 0 ? handleAnnotate : null}
-        style={{
-          cursor: annotateData && annotateData.length > 0 ? 'pointer' : 'not-allowed',
-          opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
-        }}
-      >
-                    <img src={annotate} alt="annotate-icon" />
-                  </div>
+                  className={`search-annotate-icon ${
+                    openAnnotate ? "open" : "closed"
+                  } ${
+                    annotateData && annotateData.length > 0 ? "" : "disabled"
+                  }`}
+                  onClick={
+                    annotateData && annotateData.length > 0
+                      ? handleAnnotate
+                      : null
+                  }
+                  style={{
+                    cursor:
+                      annotateData && annotateData.length > 0
+                        ? "pointer"
+                        : "not-allowed",
+                    opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
+                  }}
+                >
+                  <img src={annotate} alt="annotate-icon" />
                 </div>
               </div>
-
-                    
-          
-          
-            </>
-          
+            </div>
+          </>
         </div>
       </div>
       <Footer />

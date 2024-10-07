@@ -2,6 +2,7 @@ import React from "react";
 import Button from "./Buttons";
 import "../styles/variables.css";
 import "./Header.css";
+import "../styles/mixins.css";
 
 const Header = () => {
   return (

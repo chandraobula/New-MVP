@@ -366,20 +366,20 @@
   border: 1px solid rgba(235, 235, 243, 1);
   background: #fbfbfd;
 }
-.notes {
+.notes--container {
   width: 349px;
   height: 70vh;
   gap: 0px;
   border-radius: 16px;
-  margin: 0 5% 0 0;
+  margin: 0 1% 0 0;
 
   opacity: 0px;
   border: 1px solid rgba(235, 235, 243, 1);
-  background-color: rgba(235, 235, 243, 0.5);
+  /* background-color: rgba(235, 235, 243, 0.5); */
 }
 .note-taking {
   width: 100%;
-  height: 514px;
+  /* height: 514px; */
   box-sizing: border-box;
   background-color: rgba(235, 235, 243, 1);
   border: 1px soild rgba(235, 235, 243, 1);
@@ -397,7 +397,7 @@
   display: flex;
   flex-direction: column;
 }
-.notes p {
+/* .notes p {
   color: black;
   width: 40px;
   height: 20px;
@@ -410,8 +410,8 @@
   text-align: left;
   margin-left: 17px;
 
-  /* text-align: start; */
-}
+  text-align: start;
+} */
 .annotate-icon {
   border: 1px solid rgba(235, 235, 243, 1);
   border-radius: 8px;
@@ -536,4 +536,34 @@ td {
 .back-button > span {
   font-weight: 500;
   color: black;
+}
+.Popup {
+  display: flex;
+  border: "1px solid #ccc";
+  z-index: 1000;
+}
+.Popup-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  width: 100%;
+}
+.icon-style {
+  margin-right: "8px";
+  font-size: "16px";
+  float: left;
+  color: #000;
+}
+.Popup-buttons > span {
+  /* text-align: start; */
+  color: #000;
 }

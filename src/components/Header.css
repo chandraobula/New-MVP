@@ -7,18 +7,19 @@
   margin: 1% 1% 2% 1%;
 }
 .Search-Nav-Items {
-
   display: flex;
   justify-content: space-between;
   padding: 20px 32px 20px 32px;
 }
 .Search-nav-logo {
+  font-family: Ambermono-light;
   display: flex;
   width: 90px;
   height: 34.66px;
 }
 
 .Search-nav-login {
+  font-family: Ambermono-light;
   display: flex;
   align-items: center;
   justify-content: flex-end;

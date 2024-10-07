@@ -1,21 +1,23 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import "./ArticlePage.css";
 import { Typography } from "@mui/material";
 import flag from "../../assets/images/flash.svg";
 import Arrow from "../../assets/images/back-arrow.svg";
 import annotate from "../../assets/images/task-square.svg";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { CircularProgress } from "@mui/material";
 import Annotation from "../../components/Annotaions";
-//import edit from "../../assets/images/16px.svg";
-//import annotate from "../../assets/images/task-square.svg";
 import notesicon from "../../assets/images/note-2.svg";
 import rehypeRaw from "rehype-raw";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-//import sendicon from "../../assets/images/sendicon.svg";
 import { faTelegram } from "@fortawesome/free-brands-svg-icons";
+import { IoSaveOutline } from "react-icons/io5";
+import NotesManager from "../../components/NotesManager";
+import { TextContext } from "../../components/TextProvider";
+//import Createnotes from "../NewNote/CreateNotes";
+
 const ArticlePage = () => {
   const { pmid } = useParams();
   const location = useLocation();
@@ -26,7 +28,7 @@ const ArticlePage = () => {
   const [query, setQuery] = useState(""); // Initialize with empty string
   const [response, setResponse] = useState("");
   const [loading, setLoading] = useState(false);
-  const annotateData=location.state.annotateData || { annotateData:[]}
+  const annotateData = location.state.annotateData || { annotateData: [] };
   const endOfMessagesRef = useRef(null); // Ref to scroll to the last message
   const [chatHistory, setChatHistory] = useState(() => {
     const storedHistory = sessionStorage.getItem("chatHistory");
@@ -36,15 +38,32 @@ const ArticlePage = () => {
   // const [chatInput, setChatInput] = useState(true);
   const [openAnnotate, setOpenAnnotate] = useState(false);
   const [openNotes, setOpenNotes] = useState(false);
-  const [activeSection, setActiveSection] = useState("Title");
+  //const [activeSection, setActiveSection] = useState("Title");
   const contentRef = useRef(null); // Ref to target the content div
   const [contentWidth, setContentWidth] = useState(); // State for content width
+  //const [selectedText, setSelectedText] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
+  const { setSelectedText } = useContext(TextContext);
 
-  // const handleResize = (event) => {
-  //   const newWidth = event.target.value; // Get the new width from user interaction
-  //   setWidth1(newWidth);
-  //   setWidth2(100 - newWidth); // Second div takes up the remaining width
+  const handleMouseUp = (event) => {
+    const selection = window.getSelection().toString();
+
+    if (selection) {
+      setSelectedText(selection);
+      setPopupPosition({ x: event.pageX, y: event.pageY });
+      setShowPopup(true);
+    } else {
+      setShowPopup(false);
+    }
+  };
+
+  // const handleMoveToNotes = () => {
+  //   // alert(`Sending to Copilot: ${selectedText}`);
+  //   //console.log(selectedText);
+  //   setShowPopup(false);
   // };
+
   useEffect(() => {
     // Access the computed width of the content div
     if (contentRef.current) {
@@ -70,6 +89,7 @@ const ArticlePage = () => {
         typeof data.articles.map((article) => article.pmid)
       );
       console.log(typeof pmid);
+      //console.log(response);
       // console.log(pmid)
       const article = data.articles.find((article) => {
         // Example: If pmid is stored as `article.pmid.value`, modify accordingly
@@ -85,7 +105,7 @@ const ArticlePage = () => {
     } else {
       console.error("Data or articles not available");
     }
-  }, [pmid, data]);
+  }, [pmid, data, response]);
   console.log(articleData);
   useEffect(() => {
     // Scroll to the bottom whenever chat history is updated
@@ -224,9 +244,9 @@ const ArticlePage = () => {
   const handleBackClick = () => {
     navigate("/search", { state: { data, searchTerm } });
   };
-  const handleNavigationClick = (section) => {
-    setActiveSection(section);
-  };
+  // const handleNavigationClick = (section) => {
+  //   setActiveSection(section);
+  // };
 
   const boldTerm = (text) => {
     if (typeof text !== "string") {
@@ -241,12 +261,7 @@ const ArticlePage = () => {
     // Replace the search term in the text with markdown bold syntax
     return text.replace(regex, "**$1**"); // Wrap the matched term with markdown bold syntax
   };
-  // const contentWidth = "43.61%";
-  // const searchBarwidth = "62%";
-  // const handleWidth = (newWidth) => {
-  //   //const newWidth = parseInt(event.target.value);
-  //   setSearchWidth(newWidth);
-  // };
+
   const handleAnnotate = () => {
     if (openAnnotate) {
       setOpenAnnotate(false);
@@ -373,6 +388,7 @@ const ArticlePage = () => {
   //   let storedHistory = JSON.parse(localStorage.getItem("history")) || [];
   //   return storedHistory; // No need to reverse, latest items are already at the top
   // };
+
   return (
     <>
       <div className="container">
@@ -386,19 +402,6 @@ const ArticlePage = () => {
               />
             </a>
           </div>
-          <nav className="nav-menu">
-            <ul>
-              {/* <li>
-                <a href="/">Home</a>
-              </li> */}
-              {/* <li>
-                <a href="#why-infer">Why Infer?</a>
-              </li> */}
-              {/* <li>
-                <a href="#FAQ's">FAQs</a>
-              </li> */}
-            </ul>
-          </nav>
           <div className="auth-buttons" style={{ margin: "20px 26px 20px 0" }}>
             <button className="signup">Sign up</button>
             <button className="login">Login</button>
@@ -411,7 +414,7 @@ const ArticlePage = () => {
               {localStorage.getItem("history")
                 ? getHistoryTitles().map((item) => (
                     <li key={item.pmid}>
-                      <a>
+                      <a href="#history">
                         {capitalize(item.title.slice(0, 35))}
                         {item.title.length > 35 ? "..." : ""}
                       </a>
@@ -422,30 +425,29 @@ const ArticlePage = () => {
           </div>
 
           {articleData ? (
-            <div
-              className="article-content"
-              ref={contentRef}
-              // style={{ width: `43.61%` }}
-              // value={searchWidth}
-              // onChange={handleWidth}
-            >
+            <div className="article-content" ref={contentRef}>
               <div className="article-title">
-                {/* <button
-                    
-                    alt="Arrow-left-icon"
-                    onClick={handleBackClick}
-                    style={{cursor:"pointer"}}
-                  >Back</button> */}
-                 <div style={{display:"flex",cursor:"pointer",marginTop:"1%"}} onClick={handleBackClick}>
-                    <img src={Arrow} style={{width:"1.5%"}}></img>
-                  <button  className="back-button">Back</button>
-                  </div>
+                <div
+                  style={{
+                    display: "flex",
+                    cursor: "pointer",
+                    marginTop: "1%",
+                  }}
+                  onClick={handleBackClick}
+                >
+                  <img
+                    src={Arrow}
+                    style={{ width: "1.5%" }}
+                    alt="Back-logo"
+                  ></img>
+                  <button className="back-button">Back</button>
+                </div>
 
                 <p style={{ marginTop: "0", marginBottom: "0" }}>
                   {articleData.article_title}
                 </p>
               </div>
-              <div className="meta">
+              <div className="meta" onMouseUp={handleMouseUp}>
                 <div
                   style={{
                     display: "flex",
@@ -454,6 +456,7 @@ const ArticlePage = () => {
                     color: "grey",
                     marginBottom: "5px",
                     gap: "10px",
+                    position: "relative",
                   }}
                 >
                   <span>
@@ -509,6 +512,26 @@ const ArticlePage = () => {
                     </div>
                   </div>
                 )}
+                {showPopup && (
+                  <div
+                    className="Popup"
+                    style={{
+                      position: "absolute",
+                      top: popupPosition.y + 10,
+                      left: popupPosition.x + 10,
+                      backgroundColor: "#f1f1f1",
+                      gridTemplateColumns: "1fr",
+                    }}
+                  >
+                    <button
+                      onClick={() => setShowPopup(false)}
+                      className="Popup-buttons"
+                    >
+                      <IoSaveOutline fontSize={"20px"} color="#1A82ff" />
+                      <span style={{ color: "#1A82FF" }}>Save to notes</span>
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -519,50 +542,38 @@ const ArticlePage = () => {
 
           <div className="right-aside">
             {openAnnotate && (
-             <div className="search-annotate">
-                
-             <Annotation 
-                 openAnnotate={openAnnotate} 
-                 annotateData={annotateData}
-             />
-         
-           </div>
+              <div className="search-annotate">
+                <Annotation
+                  openAnnotate={openAnnotate}
+                  annotateData={annotateData}
+                />
+              </div>
             )}
             {openNotes && (
-              <div className="notes">
-                <div
-                  className="notes-header"
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                  }}
-                >
-                  <p>Notes</p>
-                  <div style={{ display: "flex", width: "50%", gap: "10px" }}>
-                    <button className="search-save-button"> Share</button>
-                    <button className="search-save-button"> save</button>
-                  </div>
-                </div>
-                <textarea
-                  className="note-taking"
-                  name=""
-                  id=""
-                  placeholder="Type something..."
-                ></textarea>
+              <div className="notes notes--container">
+                <NotesManager />
               </div>
             )}
             <div className="icons-group">
-            <div
-                className={`search-annotate-icon ${openAnnotate ? "open" : "closed"} ${annotateData && annotateData.length > 0 ? "" : "disabled"}`}
-                onClick={annotateData && annotateData.length > 0 ? handleAnnotate : null}
+              <div
+                className={`search-annotate-icon ${
+                  openAnnotate ? "open" : "closed"
+                } ${annotateData && annotateData.length > 0 ? "" : "disabled"}`}
+                onClick={
+                  annotateData && annotateData.length > 0
+                    ? handleAnnotate
+                    : null
+                }
                 style={{
-                  cursor: annotateData && annotateData.length > 0 ? 'pointer' : 'not-allowed',
+                  cursor:
+                    annotateData && annotateData.length > 0
+                      ? "pointer"
+                      : "not-allowed",
                   opacity: annotateData && annotateData.length > 0 ? 1 : 1, // Adjust visibility when disabled
                 }}
               >
-                            <img src={annotate} alt="annotate-icon" />
-                          </div>
+                <img src={annotate} alt="annotate-icon" />
+              </div>
               <div
                 className={`notes-icon ${openNotes ? "open" : "closed"}`}
                 onClick={() => {
